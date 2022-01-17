@@ -123,6 +123,7 @@ export default {
       gl.drawArrays(gl.POINTS, 0, 1);
     },
 
+    // 初始化shader
     initShader(gl, vertexShaderSource, fragmentShaderSource) {
       //创建顶点着色器对象
       let vertexShader = gl.createShader(gl.VERTEX_SHADER)
