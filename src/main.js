@@ -6,6 +6,10 @@ import store from './store'
 import 'normalize.css';
 import 'leaflet/dist/leaflet.css';
 
+// 引入konva
+import VueKonva from 'vue-konva'
+Vue.use(VueKonva)
+
 Vue.config.productionTip = false
 
 new Vue({

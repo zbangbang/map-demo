@@ -16,6 +16,7 @@
         <div @click="getImage">改值</div>
         <div @click="imgBox = !imgBox">图像处理</div>
         <div @click="glBox = !glBox">webGL</div>
+        <div @click="konvaBox = !konvaBox">Konva</div>
       </div>
     </div>
     <!-- 色斑图数据显示 -->
@@ -26,6 +27,9 @@
 
     <!-- webgl -->
     <webgl  v-show="glBox"></webgl>
+
+    <!-- konva canvas绘图组件demo -->
+    <konva-box v-if="konvaBox"></konva-box>
   </div>
 </template>
 
@@ -40,6 +44,7 @@ import "backbone";
 import "@/utils/leaflet-vector-scalar.js";
 import imgDetail from '@/components/imgDetail.vue';
 import Webgl from '@/components/webgl.vue';
+import KonvaBox from '@/components/konvaBox.vue';
 
 let url = 'http://192.168.0.99:8899/mapcache/wmts/';
 let wmsWaterDepth;
@@ -52,7 +57,7 @@ let wmsStandard;
 
 let scalarLayer = null;
 export default {
-  components: { imgDetail, Webgl },
+  components: { imgDetail, Webgl, KonvaBox },
   data() {
     return {
       lightShow: false,
@@ -69,6 +74,8 @@ export default {
       imgBox: false,
 
       glBox: false,
+      // Konva canvas绘图组件
+      konvaBox: false,
     }
   },
   mounted() {
