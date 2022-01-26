@@ -16,6 +16,7 @@
     <!-- 图片区域 -->
     <image-scroll
       @setImgURL="getImgURL"
+      @setDomClient="getDomClient"
     ></image-scroll>
   </div>
 </template>
@@ -49,6 +50,8 @@ export default {
 
       // 拖拽的图片url
       imgURL: null,
+      // 移动端鼠标所在位置
+      touchEndEvent: null,
     };
   },
   mounted() {
@@ -81,6 +84,57 @@ export default {
 
     // 开启拖拽监听
     this.openDragEvent()
+  },
+  watch: {
+    touchEndEvent: {
+      handler(newval) {
+        const clientXY = {
+          clientX: newval.changedTouches[0].clientX,
+          clientY: newval.changedTouches[0].clientY,
+        }
+        const stageXY = this.$refs.stageContent.getBoundingClientRect()
+        if (clientXY.clientX > stageXY.x && clientXY.clientX < stageXY.right && clientXY.clientY > stageXY.y && clientXY.clientY < stageXY.bottom) {
+          console.log('绘制图片');
+          stageContent.setPointersPositions(newval);
+
+          Konva.Image.fromURL(this.imgURL, image => {
+            // 计算宽高比，重新设置宽高
+            let wh = image.getWidth() / image.getHeight()
+            image.height(200)
+            image.width(200 * wh)
+
+            stageLayer.add(image);
+
+            // 重新设置图片位置，图片中心点位于鼠标位置
+            const pos =  stageContent.getPointerPosition()
+            image.position({
+              x: pos.x - wh * 100,
+              y: pos.y - 100
+            });
+            image.draggable(true);
+            // 双击图片，将图片删除
+            image.addEventListener('dblclick', e => {
+              imgTrans.destroy()
+              image.destroy()
+              console.log('-=-===-==--==-==-', stageLayer);
+            })
+
+            // 图片旋转变换
+            let imgTrans = new Konva.Transformer({
+              nodes: [image],
+              keepRatio: true,
+              enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+            });
+            stageLayer.add(imgTrans);
+
+            stageLayer.batchDraw();
+
+            console.log('===============', stageLayer);
+          });
+        }
+      },
+      deep: true
+    },
   },
   methods: {
     showImg(i) {
@@ -172,9 +226,19 @@ export default {
         stageContent.setPointersPositions(e);
 
         Konva.Image.fromURL(this.imgURL, image => {
+          // 计算宽高比，重新设置宽高
+          let wh = image.getWidth() / image.getHeight()
+          image.height(200)
+          image.width(200 * wh)
+
           stageLayer.add(image);
 
-          image.position(stageContent.getPointerPosition());
+          // 重新设置图片位置，图片中心点位于鼠标位置
+          const pos =  stageContent.getPointerPosition()
+          image.position({
+            x: pos.x - wh * 100,
+            y: pos.y - 100
+          });
           image.draggable(true);
           // 双击图片，将图片删除
           image.addEventListener('dblclick', e => {
@@ -202,7 +266,12 @@ export default {
     getImgURL(imgURL) {
       console.log('---------', imgURL);
       this.imgURL = imgURL
-    }
+    },
+
+    // 移动端传递鼠标最后位置
+    getDomClient(e) {
+      this.touchEndEvent = e
+    },
   },
 };
 </script>

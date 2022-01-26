@@ -3,9 +3,13 @@
     <!-- 每个可拖拽图片 -->
     <div
       class="img_item_box"
+      ref="imgItemBox"
       v-for="(item, index) in imageList"
       :key="index"
-      @dragstart="dragStart"
+      @dragstart="dragStart($event, index)"
+      @touchstart="dragStart($event, index)"
+      @touchmove="touchmove"
+      @touchend="touchend"
     >
       <span>{{ item.name }}</span>
       <img :src="item.imgURL" />
@@ -48,15 +52,32 @@ export default {
           imgURL: require("@/assets/images/konva/qxhd8.png"),
         },
       ],
+
+      // 刚开始位置
+      clientX: 0,
+      clientY: 0,
     };
   },
   mounted() {},
   methods: {
     // 开始拖拽
-    dragStart(e) {
-      console.log('e-----------', e);
+    dragStart(e, index) {
       this.$emit("setImgURL", e.target.src);
+      this.clientX = this.$refs.imgItemBox[index].getBoundingClientRect().x
+      this.clientY = this.$refs.imgItemBox[index].getBoundingClientRect().y
     },
+    touchmove(e) {
+      const clientX = e.changedTouches[0].clientX
+      const clientY = e.changedTouches[0].clientY
+      console.log('======----------===========--------', this.clientX, this.clientY, clientX, clientY);
+    },
+    touchend(e) {
+      console.log('eeeeeeeeeeee', e);
+      if (e.changedTouches[0].clientY - this.clientY < -30) {
+        // this.$emit('setDomClient', e.changedTouches[0].clientX, e.changedTouches[0].clientY)
+        this.$emit('setDomClient', e)
+      }
+    }
   },
 };
 </script>
