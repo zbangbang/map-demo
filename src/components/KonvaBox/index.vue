@@ -12,13 +12,20 @@
     </div>
     <div class="content" ref="stageContent" id="stageContent">
     </div>
+
+    <!-- 图片区域 -->
+    <image-scroll
+      @setImgURL="getImgURL"
+    ></image-scroll>
   </div>
 </template>
 
 <script>
 import Konva from 'konva'
+import imageScroll from './imageScroll.vue';
 let stageContent,stageLayer;
 export default {
+  components: { imageScroll },
   data() {
     return {
       btnList: [
@@ -39,11 +46,14 @@ export default {
         width: 200,
         height: 200,
       },
+
+      // 拖拽的图片url
+      imgURL: null,
     };
   },
   mounted() {
-    this.stageStyle.width = this.$refs.stageContent.clientWidth - 20
-    this.stageStyle.height = this.$refs.stageContent.clientHeight - 20
+    this.stageStyle.width = this.$refs.stageContent.clientWidth
+    this.stageStyle.height = this.$refs.stageContent.clientHeight
 
     stageContent = new Konva.Stage({
       container: 'stageContent',
@@ -65,7 +75,12 @@ export default {
 
       stageLayer.add(imageLayer)
       stageLayer.batchDraw()
+
+      console.log('------------', stageLayer);
     }
+
+    // 开启拖拽监听
+    this.openDragEvent()
   },
   methods: {
     showImg(i) {
@@ -141,7 +156,53 @@ export default {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+      link = null
     },
+
+    // 开启画布拖拽监听
+    openDragEvent() {
+      const stageContainer = stageContent.container()
+      stageContainer.addEventListener('dragover', e => {
+        console.log('objectobject');
+        e.preventDefault(); // !important
+      });
+      // 拖拽结束，将图片加到画布上
+      stageContainer.addEventListener('drop', e => {
+        e.preventDefault();
+        stageContent.setPointersPositions(e);
+
+        Konva.Image.fromURL(this.imgURL, image => {
+          stageLayer.add(image);
+
+          image.position(stageContent.getPointerPosition());
+          image.draggable(true);
+          // 双击图片，将图片删除
+          image.addEventListener('dblclick', e => {
+            imgTrans.destroy()
+            image.destroy()
+            console.log('-=-===-==--==-==-', stageLayer);
+          })
+
+          // 图片旋转变换
+          let imgTrans = new Konva.Transformer({
+            nodes: [image],
+            keepRatio: true,
+            enabledAnchors: ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+          });
+          stageLayer.add(imgTrans);
+
+          stageLayer.batchDraw();
+
+          console.log('===============', stageLayer);
+        });
+      })
+    },
+
+    // 子组件开始拖拽传递图片
+    getImgURL(imgURL) {
+      console.log('---------', imgURL);
+      this.imgURL = imgURL
+    }
   },
 };
 </script>
@@ -163,13 +224,14 @@ li {
   z-index: 999;
   display: flex;
   flex-flow: column nowrap;
+  padding: 10px;
 
   .title {
     height: 30px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    padding: 15px;
+    padding: 5px;
 
     li {
       margin-right: 5px;
@@ -194,7 +256,6 @@ li {
     align-items: center;
     flex-wrap: wrap;
     height: 570px;
-    padding: 10px;
   }
 }
 </style>

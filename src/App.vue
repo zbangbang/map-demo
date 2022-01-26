@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <!-- 地图 -->
+    <div id="lmap"></div>
+
     <div class="btn">
       <div class="params_btn btn_div">
         <div :class="{light: true, active: lightShow}" @click="addLightHouse">灯塔</div>
@@ -44,7 +47,7 @@ import "backbone";
 import "@/utils/leaflet-vector-scalar.js";
 import imgDetail from '@/components/imgDetail.vue';
 import Webgl from '@/components/webgl.vue';
-import KonvaBox from '@/components/konvaBox.vue';
+import KonvaBox from '@/components/KonvaBox';
 
 let url = 'http://192.168.0.99:8899/mapcache/wmts/';
 let wmsWaterDepth;
@@ -392,7 +395,7 @@ export default {
 
     initMap() {
       // 底图切换
-      window.map = L.map("app", {
+      window.map = L.map("lmap", {
         attributionControl: false,
         crs: L.CRS.EPSG3857,
         minZoom: 1,
@@ -698,7 +701,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
-#app {
+#app, #lmap {
   width: 100vw;
   height: 100vh;
 }
