@@ -139,20 +139,15 @@ export default {
   methods: {
     showImg(i) {
       this.btnList[i].bgShow = !this.btnList[i].bgShow;
-
-      if (!this.btnList[i].bgShow) {
-        let index = this.imgList.findIndex(
-          (item) => item.type == this.btnList[i].type
-        );
-        index != -1 ? this.imgList.splice(index, 1) : null;
-        return;
-      }
-
       let type = this.btnList[i].type;
 
       switch (type) {
         case "line":
-          this.drawLine();
+          if (this.btnList[i].bgShow) {
+            this.drawLine();
+          } else {
+            this.cancleLine();
+          }
           break;
         case "export":
           this.exportImage();
@@ -163,6 +158,11 @@ export default {
       }
     },
 
+    cancleLine() {
+      stageContent.off('mousedown touchstart')
+      stageContent.off('mouseup touchend')
+      stageContent.off('mousemove touchmove')
+    },
     // 绘制线
     drawLine() {
       let lastLine = null;
