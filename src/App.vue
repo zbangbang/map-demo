@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- 地图 -->
+    <!-- 地图容器 -->
     <div id="lmap"></div>
 
     <div class="btn">
