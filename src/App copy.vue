@@ -5,43 +5,22 @@
 
     <div class="btn">
       <div class="params_btn btn_div">
-        <div :class="{ light: true, active: lightShow }" @click="addLightHouse">
-          灯塔
-        </div>
-        <div :class="{ water: true, active: waterShow }" @click="addWaterDepth">
-          水深
-        </div>
-        <div :class="{ font: true, active: fontShow }" @click="addFont">
-          文字
-        </div>
-        <div :class="{ font: true, active: allShow }" @click="addAll">白天</div>
+        <div :class="{light: true, active: lightShow}" @click="addLightHouse">灯塔</div>
+        <div :class="{water: true, active: waterShow}" @click="addWaterDepth">水深</div>
+        <div :class="{font: true, active: fontShow}" @click="addFont">文字</div>
+        <div :class="{font: true, active: allShow}" @click="addAll">白天</div>
       </div>
       <div class="base_btn btn_div">
-        <div :class="{ water: true, active: baseShow }" @click="addBaseLayer">
-          基本
-        </div>
-        <div
-          :class="{ water: true, active: standardShow }"
-          @click="addStandard"
-        >
-          标准
-        </div>
-        <div :class="{ font: true, active: totalShow }" @click="addTotalLayer">
-          全部
-        </div>
+        <div :class="{water: true, active: baseShow}" @click="addBaseLayer">基本</div>
+        <div :class="{water: true, active: standardShow}" @click="addStandard">标准</div>
+        <div :class="{font: true, active: totalShow}" @click="addTotalLayer">全部</div>
       </div>
       <div class="png_btn btn_div">
         <div @click="getImage">改值</div>
         <div @click="imgBox = !imgBox">图像处理</div>
         <div @click="glBox = !glBox">webGL</div>
         <div @click="konvaBox = !konvaBox">Konva</div>
-        <input
-          type="file"
-          id="ncFile"
-          ref="ncFileInput"
-          @change="readNcFile"
-          style="display: none"
-        />
+        <input type="file" id="ncFile" ref="ncFileInput" @change="readNcFile" style="display:none">
         <div @click="ncClick">读取nc</div>
       </div>
     </div>
@@ -52,7 +31,7 @@
     <img-detail v-show="imgBox"></img-detail>
 
     <!-- webgl -->
-    <webgl v-show="glBox"></webgl>
+    <webgl  v-show="glBox"></webgl>
 
     <!-- konva canvas绘图组件demo -->
     <konva-box v-if="konvaBox"></konva-box>
@@ -68,13 +47,13 @@ import "@/utils/tileLayer.wmts.js";
 import "@/utils/leaflet-vector-scalar.css";
 import "backbone";
 import "@/utils/leaflet-vector-scalar.js";
-import imgDetail from "@/components/imgDetail.vue";
-import Webgl from "@/components/webgl.vue";
-import KonvaBox from "@/components/KonvaBox";
+import imgDetail from '@/components/imgDetail.vue';
+import Webgl from '@/components/webgl.vue';
+import KonvaBox from '@/components/KonvaBox';
 const { NetCDFReader } = require("netcdfjs");
-import "@/utils/leaflet-triangle.js";
+import '@/utils/leaflet-triangle.js';
 
-let url = "http://192.168.0.99:8899/mapcache/wmts/";
+let url = 'http://192.168.0.99:8899/mapcache/wmts/';
 let wmsWaterDepth;
 let wmsLightHouse;
 let wmsFont;
@@ -84,7 +63,7 @@ let wmsTotal;
 let wmsStandard;
 
 let scalarLayer = null;
-let triangleGroup = L.layerGroup();
+let triangleGroup = L.layerGroup()
 export default {
   components: { imgDetail, Webgl, KonvaBox },
   data() {
@@ -105,23 +84,11 @@ export default {
       glBox: false,
       // Konva canvas绘图组件
       konvaBox: false,
-
-      // 温度图例
-      colorList: [
-        "rgb(152, 120, 159)", //24.5
-        "rgb(163, 140, 181)", //25
-        "rgb(158, 164, 195)", //25.5
-        "rgb(148, 185, 198)", //26
-        "rgb(142, 203, 196)", //26.5
-        "rgb(159, 221, 184)", //27
-        "rgb(204, 235, 157)", //27.5
-        "rgb(238, 228, 136)", //28
-      ],
-    };
+    }
   },
   mounted() {
     this.initMap();
-    triangleGroup.addTo(map);
+    triangleGroup.addTo(map)
     // 直接读txt文本，加载云图
     // this.openFile();
     // 读png图片，加载云图
@@ -130,20 +97,20 @@ export default {
   methods: {
     // 直接读txt文本
     openFile() {
-      axios.get("/js/C03data.txt").then((res) => {
-        let data = res.data.split("\r\n");
-        let head = data.slice(0, 6);
-        let list = data.slice(6, data.length);
+      axios.get("/js/C03data.txt").then(res => {
+        let data = res.data.split('\r\n');
+        let head = data.slice(0, 6)
+        let list = data.slice(6, data.length)
 
-        let col = head[0].replaceAll(" ", "").replace("ncols", "");
-        let row = head[1].replaceAll(" ", "").replace("nrows", "");
-        let lon1 = head[2].replaceAll(" ", "").replace("xllcorner", "");
-        let lat1 = head[3].replaceAll(" ", "").replace("yllcorner", "");
-        let dx = head[4].replaceAll(" ", "").replace("cellsize", "");
-        let dy = dx;
-        let lon2 = lon1 + Number(col) * Number(dx);
-        let lat2 = lat1 + Number(row) * Number(dy);
-        let noData = head[5].replaceAll(" ", "").replace("NODATA_value", "");
+        let col = head[0].replaceAll(" ", "").replace('ncols', "")
+        let row = head[1].replaceAll(" ", "").replace('nrows', "")
+        let lon1 = head[2].replaceAll(" ", "").replace('xllcorner', "")
+        let lat1 = head[3].replaceAll(" ", "").replace('yllcorner', "")
+        let dx = head[4].replaceAll(" ", "").replace('cellsize', "")
+        let dy = dx
+        let lon2 = lon1 + Number(col) * Number(dx)
+        let lat2 = lat1 + Number(row) * Number(dy)
+        let noData = head[5].replaceAll(" ", "").replace('NODATA_value', "")
         let minValue = 999;
         let maxValue = -999;
 
@@ -168,15 +135,15 @@ export default {
           },
         };
 
-        list.forEach((data) => {
-          data.split(",").forEach((item) => {
-            if (item == "nan") {
-              imgArr.data.push(NaN);
+        list.forEach(data => {
+          data.split(',').forEach(item => {
+            if(item == 'nan') {
+              imgArr.data.push(NaN)
             } else {
               minValue = minValue > Number(item) ? Number(item) : minValue;
               maxValue = maxValue < Number(item) ? Number(item) : maxValue;
-              if (this.pngNum !== null) {
-                if (Number(item) > this.pngNum) {
+              if(this.pngNum !== null) {
+                if(Number(item) > this.pngNum) {
                   imgArr.data.push(item);
                 } else {
                   imgArr.data.push(NaN);
@@ -185,8 +152,8 @@ export default {
                 imgArr.data.push(item);
               }
             }
-          });
-        });
+          })
+        })
 
         payload.push(imgArr);
 
@@ -232,7 +199,7 @@ export default {
           scalarLayer.setData(payload);
           // scalarLayer.setOpacity(this.layerShow);
         }
-      });
+      })
     },
 
     // 解码
@@ -346,7 +313,7 @@ export default {
         };
         let minNum = Number(infoArr[4].split(",")[0]);
         let maxNum = Number(infoArr[4].split(",")[1]);
-        if (this.firstDrawFlag) {
+        if(this.firstDrawFlag) {
           this.pngNum = minNum;
         } else {
           this.pngNum += 2;
@@ -441,7 +408,7 @@ export default {
         maxZoom: 18,
         worldCopyJump: true,
         zoomControl: false,
-        // renderer: L.canvas()
+        renderer: L.canvas()
       });
 
       // this.tile1 = L.tileLayer
@@ -450,53 +417,46 @@ export default {
 
       window.map.setView([21.27, 110.35], 5);
 
-      let wmsLayer = L.tileLayer.wms(
-        globalConfig.mapWmsURL + "/geoserver/world/wms",
-        {
-          service: "WMS",
-          version: "1.1.1",
-          request: "GetMap",
-          layers: "world:world-i",
-          // layers: 'world:world2',
-          SRS: "EPSG:4326",
-          styles: "",
-          format: "image/png",
-          TRANSPARENT: true,
-        }
-      );
+      let wmsLayer = L.tileLayer.wms(globalConfig.mapWmsURL + "/geoserver/world/wms", {
+        service: 'WMS',
+        version: '1.1.1',
+        request: 'GetMap',
+        layers: 'world:world-i',
+        // layers: 'world:world2',
+        SRS: "EPSG:4326",
+        styles: '',
+        format: 'image/png',
+        TRANSPARENT: true,
+      });
       wmsLayer.addTo(map);
 
-      let wmsLayer1 = L.tileLayer.wms(
-        globalConfig.mapWmsURL + "/geoserver/world/wms",
-        {
-          service: "WMS",
-          version: "1.1.1",
-          request: "GetMap",
-          // layers: 'world:world-i',
-          layers: "world:world2",
-          SRS: "EPSG:4326",
-          styles: "",
-          format: "image/png",
-          TRANSPARENT: true,
-        }
-      );
+
+
+      let wmsLayer1 = L.tileLayer.wms(globalConfig.mapWmsURL + "/geoserver/world/wms", {
+        service: 'WMS',
+        version: '1.1.1',
+        request: 'GetMap',
+        // layers: 'world:world-i',
+        layers: 'world:world2',
+        SRS: "EPSG:4326",
+        styles: '',
+        format: 'image/png',
+        TRANSPARENT: true,
+      });
 
       // 灯塔
-      let wmsLayer2 = L.tileLayer.wms(
-        "http://192.168.1.152/cgi-bin/mapserv.exe",
-        {
-          map: "F:/ruanjian/ms4w/includes/DAY_BRIGHT_LIGHTS1.map",
-          service: "WMS",
-          version: "1.1.0",
-          request: "GetMap",
-          layers: "LIGHTS_1",
-          // layers: 'world:world2',
-          SRS: "EPSG:4326",
-          styles: "",
-          format: "image/png",
-          TRANSPARENT: true,
-        }
-      );
+      let wmsLayer2 = L.tileLayer.wms('http://192.168.1.152/cgi-bin/mapserv.exe', {
+        map: 'F:/ruanjian/ms4w/includes/DAY_BRIGHT_LIGHTS1.map',
+        service: 'WMS',
+        version: '1.1.0',
+        request: 'GetMap',
+        layers: 'LIGHTS_1',
+        // layers: 'world:world2',
+        SRS: "EPSG:4326",
+        styles: '',
+        format: 'image/png',
+        TRANSPARENT: true,
+      });
 
       // let circle = L.semiCircle([25, 125], {
       //       radius: 100000,
@@ -506,6 +466,7 @@ export default {
       //       fillOpacity: 0.9,
       //   }).addTo(map);
       //   circle.setDirection(0, 270);
+
 
       // let testObj = {
       //   id: 1,
@@ -520,7 +481,7 @@ export default {
 
     // 水深
     addWaterDepth() {
-      if (this.waterShow) {
+      if(this.waterShow) {
         map.removeLayer(wmsWaterDepth);
         this.waterShow = false;
       } else {
@@ -536,14 +497,14 @@ export default {
         //   format: 'image/png',
         //   transparent: false,
         // });
-        wmsWaterDepth = L.tileLayer.wmts(url, {
-          layer: "SOUNDG",
-          style: "default",
-          format: "image/png",
+        wmsWaterDepth = L.tileLayer.wmts(url,{  
+          "layer": "SOUNDG",
+          "style": "default",
+          "format": "image/png",
           // "tilematrixSet": "WGS84" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
-
+  
         wmsWaterDepth.addTo(map);
         this.waterShow = true;
       }
@@ -551,7 +512,7 @@ export default {
 
     // 灯塔
     addLightHouse() {
-      if (this.lightShow) {
+      if(this.lightShow) {
         map.removeLayer(wmsLightHouse);
         this.lightShow = false;
       } else {
@@ -569,14 +530,14 @@ export default {
         //   // updateWhenIdle: true,
         //   // updateWhenZooming: false,
         // });
-        wmsLightHouse = L.tileLayer.wmts(url, {
-          layer: "LIGHTS",
-          style: "default",
-          format: "image/png",
+        wmsLightHouse = L.tileLayer.wmts(url,{  
+          "layer": "LIGHTS",
+          "style": "default",
+          "format": "image/png",
           // "tilematrixSet": "WGS84" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
-
+  
         wmsLightHouse.addTo(map);
         this.lightShow = true;
       }
@@ -584,7 +545,7 @@ export default {
 
     // 文字
     addFont() {
-      if (this.fontShow) {
+      if(this.fontShow) {
         map.removeLayer(wmsFont);
         this.fontShow = false;
       } else {
@@ -600,22 +561,22 @@ export default {
         //   format: 'image/png',
         //   transparent: false,
         // });
-        wmsFont = L.tileLayer.wmts(url, {
-          layer: "SEAARE",
-          style: "default",
-          format: "image/png",
+        wmsFont = L.tileLayer.wmts(url,{  
+          "layer": "SEAARE",
+          "style": "default",
+          "format": "image/png",
           // "tilematrixSet": "WGS84" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
         this.fontShow = true;
-
+  
         wmsFont.addTo(map);
       }
     },
 
     // 白天的所有要素
     addAll() {
-      if (this.allShow) {
+      if(this.allShow) {
         map.removeLayer(wmsAll);
         this.allShow = false;
       } else {
@@ -632,21 +593,22 @@ export default {
         //   transparent: false,
         // });
 
-        wmsAll = L.tileLayer.wmts(url, {
-          layer: "BRIGHT",
-          style: "default",
-          format: "image/png",
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+        wmsAll = L.tileLayer.wmts(url,{  
+          "layer": "BRIGHT",
+          "style": "default",
+          "format": "image/png",
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
         this.allShow = true;
-
+  
         wmsAll.addTo(map);
       }
     },
 
+
     // 基本
     addBaseLayer() {
-      if (this.baseShow) {
+      if(this.baseShow) {
         map.removeLayer(wmsBase);
         this.baseShow = false;
       } else {
@@ -663,22 +625,22 @@ export default {
         //   transparent: false,
         // });
 
-        wmsBase = L.tileLayer.wmts(url, {
-          layer: "EASY",
-          style: "default",
-          format: "image/png",
+        wmsBase = L.tileLayer.wmts(url,{  
+          "layer": "EASY",
+          "style": "default",
+          "format": "image/png",
           // "tilematrixSet": "WGS84" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
         this.baseShow = true;
-
+  
         wmsBase.addTo(map);
       }
     },
 
     // 标准的所有要素
     addStandard() {
-      if (this.standardShow) {
+      if(this.standardShow) {
         map.removeLayer(wmsStandard);
         this.standardShow = false;
       } else {
@@ -695,22 +657,22 @@ export default {
         //   transparent: false,
         // });
 
-        wmsStandard = L.tileLayer.wmts(url, {
-          layer: "standard",
-          style: "default",
-          format: "image/png",
+        wmsStandard = L.tileLayer.wmts(url,{  
+          "layer": "standard",
+          "style": "default",
+          "format": "image/png",
           // "tilematrixSet": "WGS84" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
         this.standardShow = true;
-
+  
         wmsStandard.addTo(map);
       }
     },
 
     // 全部
     addTotalLayer() {
-      if (this.totalShow) {
+      if(this.totalShow) {
         map.removeLayer(wmsTotal);
         this.totalShow = false;
       } else {
@@ -727,15 +689,15 @@ export default {
         //   transparent: false,
         // });
         // this.totalShow = true;
-
+  
         // wmsTotal.addTo(map);
 
-        wmsTotal = L.tileLayer.wmts(url, {
-          layer: "BRIGHT",
-          style: "default",
-          format: "image/png",
+        wmsTotal = L.tileLayer.wmts(url,{  
+          "layer": "BRIGHT",
+          "style": "default",
+          "format": "image/png",
           // "tilematrixSet": "WGS84" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
-          tilematrixSet: "GoogleMapsCompatible", //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
+          "tilematrixSet": "GoogleMapsCompatible" //高级海图 advsea ,基础海陆混合 basicsearoad ,高级海陆混合 advsearoad
         });
         this.totalShow = true;
         wmsTotal.addTo(map);
@@ -744,16 +706,16 @@ export default {
 
     // 读取nc文件
     ncClick() {
-      this.$refs.ncFileInput.click();
+      this.$refs.ncFileInput.click()
     },
 
     readNcFile() {
-      const ncFile = this.$refs.ncFileInput.files[0];
-      console.log("===================ncFile", ncFile);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const ncData = new NetCDFReader(event.target.result);
-        console.log("==================ncData", ncData);
+      const ncFile = this.$refs.ncFileInput.files[0]
+      console.log('===================ncFile', ncFile);
+      const reader = new FileReader()
+      reader.onload = event => {
+        const ncData = new NetCDFReader(event.target.result)
+        console.log('==================ncData', ncData);
         // let tempData = ncData.getDataVariable('temp')
         // console.log('=========tempData', tempData);
         // let siglayData = ncData.getDataVariable('siglay')
@@ -766,92 +728,69 @@ export default {
         // console.log('=========lonData', lonData);
 
         // 52层的数据
-        let levelData = ncData.getDataVariable("temp");
-        let tempData = [];
-        for (let i = 51, length = levelData.length; i < length; i += 52) {
-          tempData.push(levelData[i]);
+        let levelData = ncData.getDataVariable('temp')
+        let tempData = []
+        for(let i = 51, length = levelData.length; i < length; i+=52) {
+          tempData.push(levelData[i])
         }
-        console.log("=========tempData", tempData);
-        let xData = ncData.getDataVariable("SCHISM_hgrid_node_x");
-        console.log("=========xData", xData);
-        let yData = ncData.getDataVariable("SCHISM_hgrid_node_y");
-        console.log("=========yData", yData);
-        let nodeData = [];
+        console.log('=========tempData', tempData);
+        let xData = ncData.getDataVariable('SCHISM_hgrid_node_x')
+        console.log('=========xData', xData);
+        let yData = ncData.getDataVariable('SCHISM_hgrid_node_y')
+        console.log('=========yData', yData);
+        let nodeData = []
         tempData.forEach((item, index) => {
-          let color = this.getColor(item)
-          nodeData.push([
-            yData[index].toFixed(5),
-            xData[index].toFixed(5),
-            item.toFixed(6),
-            color
-          ]);
-        });
-        console.log("=========nodeData", nodeData);
+          // nodeData.push([yData[index].toFixed(6), xData[index].toFixed(6), item.toFixed(6)])
+          nodeData.push({
+            lat: yData[index].toFixed(6),
+            lng: xData[index].toFixed(6),
+            value: item.toFixed(6)
+          })
+        })
+        console.log('=========nodeData', nodeData);
 
-        let siglayData = ncData.getDataVariable("SCHISM_hgrid_face_nodes");
-        let faceData = [];
-        siglayData.forEach((item, index) => {
-          if (index % 4 != 3) {
-            faceData.push(item);
-          }
-        });
-        console.log("=========faceData", faceData);
-        // for(let i = 0,length = latlngs.length; i < length; i+=3) {
-        //   let polygon = L.polygon([latlngs[i], latlngs[i + 1], latlngs[i + 2]], {color: colorList[i % 6], stroke: false}).bindPopup(`经纬度：${latlngs[i]},颜色：${colorList[i % 6]}`)
-        //   triangleGroup.addLayer(polygon)
-        // }
+        let siglayData = ncData.getDataVariable('SCHISM_hgrid_face_nodes')
+        let latlngs = []
+        for (let j = 0, length = siglayData.length; j < length; j += 4) {
+          let arr = []
+          arr.push([nodeData[siglayData[j] - 1].lat, nodeData[siglayData[j] - 1].lng])
+          arr.push([nodeData[siglayData[j + 1] - 1].lat, nodeData[siglayData[j + 1] - 1].lng])
+          arr.push([nodeData[siglayData[j + 2] - 1].lat, nodeData[siglayData[j + 2] - 1].lng])
+          arr.push(nodeData[siglayData[j] - 1].value)
+          latlngs.push(arr)
+        }
+        console.log('=========latlngs', latlngs);
+        let colorList = [
+          'rgb(245, 34, 45)',
+          'rgb(250, 84, 28)',
+          'rgb(250, 173, 20)',
+          'rgb(66, 185, 131)',
+          'rgb(82, 196, 26)',
+          'rgb(24, 144, 255)'
+        ]
 
         let tri = L.triangle({
-          nodeData,
-          faceData,
+          latlngs,
+          colorList,
           isPopup: true,
           isCanvas: true,
-          isStroke: false,
-        });
-        tri.onAdd(map);
+          isStroke: false
+        })
+        tri.onAdd(map)
+
         // setTimeout(() => {
         //   tri.onRemove()
         // }, 5000)
-      };
-      reader.readAsArrayBuffer(ncFile);
-    },
-
-    getColor(value) {
-      // colorList: [
-      //   "rgb(152, 120, 159)", //24.5
-      //   "rgb(163, 140, 181)", //25
-      //   "rgb(158, 164, 195)", //25.5
-      //   "rgb(148, 185, 198)", //26
-      //   "rgb(142, 203, 196)", //26.5
-      //   "rgb(159, 221, 184)", //27
-      //   "rgb(204, 235, 157)", //27.5
-      //   "rgb(238, 228, 136)", //28
-      // ],
-      if (value < 25) {
-        return this.colorList[0]
-      } else if (value >= 25 && value < 25.5) {
-        return this.colorList[1]
-      } else if (value >= 25.5 && value < 26) {
-        return this.colorList[2]
-      } else if (value >= 26 && value < 26.5) {
-        return this.colorList[3]
-      } else if (value >= 26.5 && value < 27) {
-        return this.colorList[4]
-      } else if (value >= 27 && value < 27.5) {
-        return this.colorList[5]
-      } else if (value >= 27.5 && value < 28) {
-        return this.colorList[6]
-      } else {
-        return this.colorList[7]
       }
+      reader.readAsArrayBuffer(ncFile)
+
     }
-  },
-};
+  }
+}
 </script>
 
 <style lang="less" scoped>
-#app,
-#lmap {
+#app, #lmap {
   width: 100vw;
   height: 100vh;
 }
@@ -871,9 +810,7 @@ export default {
     flex-wrap: wrap;
   }
 
-  .params_btn,
-  .base_btn,
-  .png_btn {
+  .params_btn, .base_btn, .png_btn {
     div {
       width: 50px;
       height: 30px;
@@ -903,8 +840,8 @@ export default {
 }
 // 色斑图弹出信息
 .scalarNum {
-  position: fixed;
-  color: #fff;
-  z-index: 999;
+    position: fixed;
+    color: #FFF;
+    z-index: 999;
 }
 </style>
