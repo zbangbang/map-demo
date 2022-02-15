@@ -36,7 +36,7 @@ L.Triangle = L.Polygon.extend({
 
   onAdd(map) {
     this._map = map;
-    this.getTriangleLayer();
+    this.drawTriangleLayer();
 
     this._map.addLayer(this._triangleLayer);
   },
@@ -46,8 +46,23 @@ L.Triangle = L.Polygon.extend({
     this._map.removeLayer(this._triangleLayer)
   },
 
-  // 获取三角形图层
+  // 返回三角网格的图层组
   getTriangleLayer() {
+    return this._triangleLayer
+  },
+
+  setTriangleColor(nodeData, faceData) {
+    let layers = this._triangleLayer.getLayers()
+    for (let i = 0, j = 0, length = faceData.length; i < length; i += 3, j++) {
+      let color = nodeData[faceData[i] - 1][3]
+      layers[j].setStyle({
+        fillColor: color
+      })
+    }
+  },
+
+  // 获取三角形图层
+  drawTriangleLayer() {
     this._triangleLayer = L.layerGroup({
       pane: this._paneName
     });
@@ -85,12 +100,11 @@ L.Triangle = L.Polygon.extend({
             fillOpacity: 1,
           })
       if (isPopup) {
-        polygon.bindPopup(`经纬度：${nodeData[faceData[i] - 1][0], nodeData[faceData[i] - 1][1]},颜色：${colorList[i % 6]}`)
+        // polygon.bindPopup(`经纬度：${nodeData[faceData[i] - 1][0], nodeData[faceData[i] - 1][1]},颜色：${colorList[i % 6]}`)
+        polygon.bindPopup(`经纬度：${nodeData[faceData[i] - 1][0], nodeData[faceData[i] - 1][1]}--数据值：${nodeData[faceData[i] - 1][2]}--颜色：${nodeData[faceData[i] - 1][3]}`)
       }
       this._triangleLayer.addLayer(polygon)
     }
-
-    return this._triangleLayer;
   },
 
   getLatlngs: function () {

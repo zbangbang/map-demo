@@ -37,12 +37,20 @@
         <div @click="konvaBox = !konvaBox">Konva</div>
         <input
           type="file"
-          id="ncFile"
-          ref="ncFileInput"
-          @change="readNcFile"
+          id="hhncFile"
+          ref="hhncFileInput"
+          @change="readHHNcFile('hhncFileInput')"
           style="display: none"
         />
-        <div @click="ncClick">读取nc</div>
+        <div @click="ncClick('hhncFileInput')">读取河海nc</div>
+        <input
+          type="file"
+          id="cxkncFile"
+          ref="cxkncFileInput"
+          @change="readCxkNcFile('cxkncFileInput')"
+          style="display: none"
+        />
+        <div @click="ncClick('cxkncFileInput')">读取程序库nc</div>
       </div>
     </div>
     <!-- 色斑图数据显示 -->
@@ -84,7 +92,7 @@ let wmsTotal;
 let wmsStandard;
 
 let scalarLayer = null;
-let triangleGroup = L.layerGroup();
+let triangleGroup = null;
 export default {
   components: { imgDetail, Webgl, KonvaBox },
   data() {
@@ -117,11 +125,14 @@ export default {
         "rgb(204, 235, 157)", //27.5
         "rgb(238, 228, 136)", //28
       ],
+      // 河海网格第一次绘制
+      hhFirstFlag: true,
+      // 程序库网格第一次绘制
+      cxkFirstFlag: true,
     };
   },
   mounted() {
     this.initMap();
-    triangleGroup.addTo(map);
     // 直接读txt文本，加载云图
     // this.openFile();
     // 读png图片，加载云图
@@ -743,12 +754,13 @@ export default {
     },
 
     // 读取nc文件
-    ncClick() {
-      this.$refs.ncFileInput.click();
+    ncClick(inputType) {
+      this.$refs[inputType].click();
     },
 
-    readNcFile() {
-      const ncFile = this.$refs.ncFileInput.files[0];
+    // 绘制河海三角网格数据
+    readHHNcFile(ncType) {
+      const ncFile = this.$refs[ncType].files[0];
       console.log("===================ncFile", ncFile);
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -778,12 +790,12 @@ export default {
         console.log("=========yData", yData);
         let nodeData = [];
         tempData.forEach((item, index) => {
-          let color = this.getColor(item)
+          let color = this.getColor(item);
           nodeData.push([
             yData[index].toFixed(5),
             xData[index].toFixed(5),
             item.toFixed(6),
-            color
+            color,
           ]);
         });
         console.log("=========nodeData", nodeData);
@@ -796,10 +808,6 @@ export default {
           }
         });
         console.log("=========faceData", faceData);
-        // for(let i = 0,length = latlngs.length; i < length; i+=3) {
-        //   let polygon = L.polygon([latlngs[i], latlngs[i + 1], latlngs[i + 2]], {color: colorList[i % 6], stroke: false}).bindPopup(`经纬度：${latlngs[i]},颜色：${colorList[i % 6]}`)
-        //   triangleGroup.addLayer(polygon)
-        // }
 
         let tri = L.triangle({
           nodeData,
@@ -816,6 +824,67 @@ export default {
       reader.readAsArrayBuffer(ncFile);
     },
 
+    // 绘制典型计算程序库三角网格数据
+    readCxkNcFile(ncType) {
+      const ncFile = this.$refs[ncType].files[0];
+      console.log("===================ncFile", ncFile);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const ncData = new NetCDFReader(event.target.result);
+        console.log("==================ncData", ncData);
+        let levelData = ncData.getDataVariable("temp")[0];
+        console.log("=========levelData", levelData);
+        let tempData = [];
+        for (let i = 0, length = levelData.length; i < length; i += 40) {
+          tempData.push(levelData[i]);
+        }
+        console.log("=========tempData", tempData);
+        // let siglayData = ncData.getDataVariable('siglay')
+        // console.log('=========siglayData', siglayData);
+        let nvData = ncData.getDataVariable("nv");
+        let length = nvData.length / 3;
+        let faceData = [];
+        for (let i = 0; i < length; i++) {
+          faceData.push(nvData[i]);
+          faceData.push(nvData[i + length]);
+          faceData.push(nvData[i + length * 2]);
+        }
+
+        console.log("=========faceData", faceData);
+        let latData = ncData.getDataVariable("lat");
+        console.log("=========latData", latData);
+        let lonData = ncData.getDataVariable("lon");
+        console.log("=========lonData", lonData);
+
+        let nodeData = [];
+        tempData.forEach((item, index) => {
+          let color = this.getColor(item);
+          nodeData.push([
+            latData[index].toFixed(5),
+            lonData[index].toFixed(5),
+            item.toFixed(1),
+            color,
+          ]);
+        });
+        console.log("=========nodeData", nodeData);
+
+        if (this.cxkFirstFlag) {
+          triangleGroup = L.triangle({
+            nodeData,
+            faceData,
+            isPopup: true,
+            isCanvas: true,
+            isStroke: false,
+          });
+          triangleGroup.onAdd(map);
+          this.cxkFirstFlag = false;
+        } else {
+          triangleGroup.setTriangleColor(nodeData, faceData);
+        }
+      };
+      reader.readAsArrayBuffer(ncFile);
+    },
+
     getColor(value) {
       // colorList: [
       //   "rgb(152, 120, 159)", //24.5
@@ -828,23 +897,23 @@ export default {
       //   "rgb(238, 228, 136)", //28
       // ],
       if (value < 25) {
-        return this.colorList[0]
+        return this.colorList[0];
       } else if (value >= 25 && value < 25.5) {
-        return this.colorList[1]
+        return this.colorList[1];
       } else if (value >= 25.5 && value < 26) {
-        return this.colorList[2]
+        return this.colorList[2];
       } else if (value >= 26 && value < 26.5) {
-        return this.colorList[3]
+        return this.colorList[3];
       } else if (value >= 26.5 && value < 27) {
-        return this.colorList[4]
+        return this.colorList[4];
       } else if (value >= 27 && value < 27.5) {
-        return this.colorList[5]
+        return this.colorList[5];
       } else if (value >= 27.5 && value < 28) {
-        return this.colorList[6]
+        return this.colorList[6];
       } else {
-        return this.colorList[7]
+        return this.colorList[7];
       }
-    }
+    },
   },
 };
 </script>
@@ -857,7 +926,7 @@ export default {
 }
 
 .btn {
-  width: 180px;
+  width: 280px;
   position: fixed;
   top: 20px;
   right: 20px;
@@ -875,11 +944,12 @@ export default {
   .base_btn,
   .png_btn {
     div {
-      width: 50px;
+      min-width: 50px;
       height: 30px;
       line-height: 30px;
       text-align: center;
       background: #fff;
+      padding: 0 10px;
       margin: 5px;
 
       &:hover {
