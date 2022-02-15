@@ -68,7 +68,6 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from "vuex";
 import axios from "axios";
 import "@/utils/leaflet.ChineseTmsProviders.js";
 import "@/utils/Semicircle.js";
@@ -93,10 +92,7 @@ let wmsTotal;
 let wmsStandard;
 
 let scalarLayer = null;
-// 河海三角网格数据
-let triangleGroupHH = null;
-// 计算程序库三角网格数据
-let triangleGroupCXK = null;
+let triangleGroup = null;
 export default {
   components: { imgDetail, Webgl, KonvaBox },
   data() {
@@ -141,11 +137,6 @@ export default {
     // this.openFile();
     // 读png图片，加载云图
     // this.getImage();
-  },
-  computed: {
-    ...mapState({
-      colorScaleC: (state) => state.publicInfo.colorScaleC,
-    }),
   },
   methods: {
     // 直接读txt文本
@@ -797,24 +788,14 @@ export default {
         console.log("=========xData", xData);
         let yData = ncData.getDataVariable("SCHISM_hgrid_node_y");
         console.log("=========yData", yData);
-
-        let colorScale = [
-          [24.5, [152, 120, 159]], //24.5
-          [25, [163, 140, 181]], //25
-          [25.5, [158, 164, 195]], //25.5
-          [26, [148, 185, 198]], //26
-          [26.5, [142, 203, 196]], //26.5
-          [27, [159, 221, 184]], //27
-          [27.5, [204, 235, 157]], //27.5
-          [28, [238, 228, 136]], //28
-        ];
-
         let nodeData = [];
         tempData.forEach((item, index) => {
+          let color = this.getColor(item);
           nodeData.push([
             yData[index].toFixed(5),
             xData[index].toFixed(5),
             item.toFixed(6),
+            color,
           ]);
         });
         console.log("=========nodeData", nodeData);
@@ -828,20 +809,14 @@ export default {
         });
         console.log("=========faceData", faceData);
 
-        if (this.hhFirstFlag) {
-          triangleGroupHH = L.triangle({
-            nodeData,
-            faceData,
-            colorScale,
-            isPopup: true,
-            isCanvas: true,
-            isStroke: false,
-          });
-          triangleGroupHH.onAdd(map);
-          this.hhFirstFlag = false
-        } else {
-          triangleGroupHH.setTriangleData(nodeData, faceData);
-        }
+        let tri = L.triangle({
+          nodeData,
+          faceData,
+          isPopup: true,
+          isCanvas: true,
+          isStroke: false,
+        });
+        tri.onAdd(map);
         // setTimeout(() => {
         //   tri.onRemove()
         // }, 5000)
@@ -883,30 +858,61 @@ export default {
 
         let nodeData = [];
         tempData.forEach((item, index) => {
+          let color = this.getColor(item);
           nodeData.push([
             latData[index].toFixed(5),
             lonData[index].toFixed(5),
-            Number(item.toFixed(1)),
+            item.toFixed(1),
+            color,
           ]);
         });
         console.log("=========nodeData", nodeData);
 
         if (this.cxkFirstFlag) {
-          triangleGroupCXK = L.triangle({
+          triangleGroup = L.triangle({
             nodeData,
             faceData,
-            colorScale: this.colorScaleC,
             isPopup: true,
             isCanvas: true,
             isStroke: false,
           });
-          triangleGroupCXK.onAdd(map);
+          triangleGroup.onAdd(map);
           this.cxkFirstFlag = false;
         } else {
-          triangleGroupCXK.setTriangleData(nodeData, faceData);
+          triangleGroup.setTriangleColor(nodeData, faceData);
         }
       };
       reader.readAsArrayBuffer(ncFile);
+    },
+
+    getColor(value) {
+      // colorList: [
+      //   "rgb(152, 120, 159)", //24.5
+      //   "rgb(163, 140, 181)", //25
+      //   "rgb(158, 164, 195)", //25.5
+      //   "rgb(148, 185, 198)", //26
+      //   "rgb(142, 203, 196)", //26.5
+      //   "rgb(159, 221, 184)", //27
+      //   "rgb(204, 235, 157)", //27.5
+      //   "rgb(238, 228, 136)", //28
+      // ],
+      if (value < 25) {
+        return this.colorList[0];
+      } else if (value >= 25 && value < 25.5) {
+        return this.colorList[1];
+      } else if (value >= 25.5 && value < 26) {
+        return this.colorList[2];
+      } else if (value >= 26 && value < 26.5) {
+        return this.colorList[3];
+      } else if (value >= 26.5 && value < 27) {
+        return this.colorList[4];
+      } else if (value >= 27 && value < 27.5) {
+        return this.colorList[5];
+      } else if (value >= 27.5 && value < 28) {
+        return this.colorList[6];
+      } else {
+        return this.colorList[7];
+      }
     },
   },
 };
