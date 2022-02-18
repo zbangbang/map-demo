@@ -860,7 +860,10 @@ export default {
         let levelData = ncData.getDataVariable("temp")[0];
         console.log("=========levelData", levelData);
         let tempData = [];
-        for (let i = 0, length = levelData.length; i < length; i += 40) {
+        // 第一层
+        // for (let i = 0, length = levelData.length / 40; i < length; i++) {
+        // 最后一层
+        for (let i = levelData.length / 40 * 39, length = levelData.length; i < length; i++) {
           tempData.push(levelData[i]);
         }
         console.log("=========tempData", tempData);
